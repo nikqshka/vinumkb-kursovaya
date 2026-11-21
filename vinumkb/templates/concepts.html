@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Глоссарий — vinumkb{% endblock %}
+
+{% block content %}
+<h1>Глоссарий сомелье</h1>
+<p class="sub">Определения, категории и связи виноделия, органолептики и сервировки.</p>
+
+<form action="{{ url_for('concepts_view') }}" method="get" style="display:flex; gap:10px; margin:20px 0 28px; max-width:440px;">
+  <input type="text" name="q" value="{{ query }}" placeholder="Например, танинность" style="flex:1;" />
+  <button type="submit" class="btn">Найти</button>
+</form>
+
+{% for cat, items in grouped.items() %}
+  <h2 style="margin:24px 0 12px; font-size:19px;">{{ cat }} <span style="color:var(--muted); font-weight:400;">· {{ items|length }}</span></h2>
+  <div class="grid-3">
+    {% for c in items %}
+      <article class="card">
+        <span class="card-title-link" style="cursor:default;">{{ c.name }}</span>
+        <p>{{ c.description }}</p>
+      </article>
+    {% endfor %}
+  </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Закладки — vinumkb{% endblock %}
+
+{% block content %}
+<h1>Закладки</h1>
+<p class="sub">Сохранённые и недавно прочитанные статьи хранятся локально в этом браузере.</p>
+
+<h2 style="margin:28px 0 14px;" id="favHeading">Избранное · 0</h2>
+<div id="favBox"></div>
+
+<h2 style="margin:34px 0 14px;">Недавно прочитанное</h2>
+<div class="grid-3" id="recentBox"></div>
+
+<div id="articlesJson" style="display:none;">
+  {% for a in all_articles %}
+    <span data-id="{{ a.id }}" data-cat="{{ a.category }}" data-title="{{ a.title }}" data-desc="{{ a.content[:130] }}" data-url="{{ url_for('article_detail', aid=a.id) }}"></span>
+  {% endfor %}
+</div>
+
+<script>
+  const all = Array.from(document.querySelectorAll('#articlesJson span')).map(s => ({
+    id: Number(s.dataset.id), cat: s.dataset.cat, title: s.dataset.title, desc: s.dataset.desc, url: s.dataset.url
+  }));
+  const favIds = JSON.parse(localStorage.getItem('vinum_fav_articles') || '[]');
+  const recIds = JSON.parse(localStorage.getItem('vinum_recent_articles') || '[]');
+
+  document.getElementById('favHeading').textContent = `Избранное · ${favIds.length}`;
+  const favItems = all.filter(a => favIds.includes(a.id));
+  const favBox = document.getElementById('favBox');
+
+  if (favItems.length === 0) {
+    favBox.innerHTML = `
+      <div style="border:1px dashed var(--border); border-radius:var(--radius); padding:28px; background:var(--surface);">
+        <h3 style="margin-bottom:6px;">Соберите свою подборку сомелье</h3>
+        <p style="color:var(--muted); font-size:14px; margin-bottom:16px;">Нажмите «Сохранить статью» в любой инструкции — она появится здесь.</p>
+        <a class="btn" href="{{ url_for('articles_list') }}">Выбрать статью</a>
+      </div>`;
+  } else {
+    favBox.innerHTML = `<div class="grid-3">${favItems.map(a => `
+      <article class="card"><small>${a.cat}</small><a class="card-title-link" href="${a.url}">${a.title}</a><p>${a.desc}...</p></article>
+    `).join('')}</div>`;
+  }
+
+  const recItems = recIds.map(id => all.find(a => a.id === id)).filter(Boolean);
+  document.getElementById('recentBox').innerHTML = recItems.length
+    ? recItems.map(a => `<article class="card"><small>${a.cat}</small><a class="card-title-link" href="${a.url}">${a.title}</a><p>${a.desc}...</p></article>`).join('')
+    : `<p style="color:var(--muted);">Вы ещё не открывали статьи в этой сессии.</p>`;
+</script>
+{% endblock %}

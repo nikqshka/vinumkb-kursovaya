@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Поиск по базе знаний — vinumkb{% endblock %}
+
+{% block content %}
+{% from '_art.html' import bottle, dish, cat %}
+<h1 style="margin-bottom:18px;">Найти в базе</h1>
+
+<form action="{{ url_for('search_view') }}" method="get">
+  <div class="search-pill" style="max-width:740px;">
+    <input type="search" name="q" value="{{ query }}" placeholder="Например, какое вино к стейку" autocomplete="off" />
+    <button type="submit">Найти</button>
+  </div>
+  <div class="counter">До 15 слов · можно искать по вину, сорту, статье или термину</div>
+
+  <div style="display:flex; gap:14px; flex-wrap:wrap; margin:16px 0;">
+    <div>
+      <small style="display:block; color:var(--muted); margin-bottom:5px;">Тип вина</small>
+      <select name="type">
+        <option value="">Все типы</option>
+        <option value="Красное" {% if wine_type == 'Красное' %}selected{% endif %}>Красное</option>
+        <option value="Белое" {% if wine_type == 'Белое' %}selected{% endif %}>Белое</option>
+        <option value="Розовое" {% if wine_type == 'Розовое' %}selected{% endif %}>Розовое</option>
+        <option value="Игристое" {% if wine_type == 'Игристое' %}selected{% endif %}>Игристое</option>
+      </select>
+    </div>
+    <div>
+      <small style="display:block; color:var(--muted); margin-bottom:5px;">Раздел</small>
+      <select name="section">
+        <option value="">Все разделы</option>
+        <option value="wines" {% if section == 'wines' %}selected{% endif %}>Вина</option>
+        <option value="articles" {% if section == 'articles' %}selected{% endif %}>Статьи</option>
+        <option value="concepts" {% if section == 'concepts' %}selected{% endif %}>Понятия</option>
+      </select>
+    </div>
+  </div>
+</form>
+
+{% if not query and not wine_type %}
+  <p class="sub" style="margin-bottom:14px;">Введите название вина, свойства или вопрос.</p>
+  <div class="chips">
+    <a class="chip" href="{{ url_for('search_view', q='стейк') }}">стейк</a>
+    <a class="chip" href="{{ url_for('search_view', q='пино нуар') }}">пино нуар</a>
+    <a class="chip" href="{{ url_for('search_view', q='морепродукты') }}">вино к морепродуктам</a>
+    <a class="chip" href="{{ url_for('search_view', q='танины') }}">что такое танины</a>
+    <a class="chip" href="{{ url_for('search_view', q='шампанское') }}">шампанское и просекко</a>
+  </div>
+{% else %}
+  <p class="sub" style="margin-bottom:22px;">
+    Найдено: вин ({{ results.wines|length }}), статей ({{ results.articles|length }}), понятий ({{ results.concepts|length }}) · <strong>{{ elapsed_ms }} мс</strong>
+  </p>
+
+  {% if results.wines %}
+    <h2 style="margin-bottom:12px;">Вина</h2>
+    <div class="grid-3" style="margin-bottom:28px;">
+      {% for w in results.wines %}
+        <article class="card">
+          <div class="cover">{{ bottle(w.type, w.name) }}</div>
+          <small>{{ w.type }} · {{ w.country }}</small>
+          <a class="card-title-link" href="{{ url_for('wine_detail', name=w.name) }}">{{ w.name }}</a>
+          <p>{{ w.description }}</p>
+          <div class="meta-accent">{{ w.price_byn }} BYN</div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if results.articles %}
+    <h2 style="margin-bottom:12px;">Статьи</h2>
+    <div class="grid-3" style="margin-bottom:28px;">
+      {% for a in results.articles %}
+        <article class="card">
+          <small>{{ a.category }}</small>
+          <a class="card-title-link" href="{{ url_for('article_detail', aid=a.id) }}">{{ a.title }}</a>
+          <p>{{ a.content[:120] }}...</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if results.concepts %}
+    <h2 style="margin-bottom:12px;">Понятия</h2>
+    <div class="grid-3">
+      {% for c in results.concepts %}
+        <article class="card">
+          <small>{{ c.category }}</small>
+          <h3 style="color:var(--link); margin-bottom:6px;">{{ c.name }}</h3>
+          <p>{{ c.description }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

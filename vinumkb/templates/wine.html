@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ wine.name }} — vinumkb{% endblock %}
+
+{% block content %}
+{% from '_art.html' import bottle, dish, cat %}
+<div style="margin-bottom:16px;"><a class="btn secondary" href="{{ url_for('wines_catalog') }}">← Назад в каталог</a></div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="cover" style="height:280px;">{{ bottle(wine.type, wine.name) }}</div>
+    <small>{{ wine.type }} · {{ wine.sweetness }} · {{ wine.price_segment }}</small>
+    <h1 style="font-size:30px; margin:6px 0 10px;">{{ wine.name }}</h1>
+    <p style="margin-bottom:18px; color:var(--text);">{{ wine.description }}</p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Страна / Регион</th><td>{{ wine.country }}, {{ wine.region }}</td></tr>
+        <tr><th>Сорт винограда</th><td>{{ wine.grape }}</td></tr>
+        <tr><th>Цена (ориент.)</th><td><strong>{{ wine.price_byn }} BYN</strong></td></tr>
+        <tr><th>Температура подачи</th><td>{{ wine.serving_temp }}</td></tr>
+        <tr><th>Бокал</th><td>{{ wine.glass }}</td></tr>
+        <tr><th>Ароматы</th><td>{{ wine.aromas|join(', ') }}</td></tr>
+        <tr><th>Сочетания с едой</th><td>{{ wine.foods|join(', ') }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:12px;">Семантические триплеты в БЗ</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Предикат</th><th>Объект</th></tr></thead>
+        <tbody>
+          {% for pred, obj in triples %}
+            <tr><td><code>{{ pred }}</code></td><td>{{ obj }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if related %}
+  <div class="section-head"><h2>Похожие вина</h2></div>
+  <div class="grid-3">
+    {% for r in related %}
+      <article class="card">
+        <div class="cover" style="height:150px;">{{ bottle(r.type, r.name) }}</div>
+        <small>{{ r.country }} · {{ r.grape }}</small>
+        <a class="card-title-link" href="{{ url_for('wine_detail', name=r.name) }}">{{ r.name }}</a>
+        <p>{{ r.description }}</p>
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

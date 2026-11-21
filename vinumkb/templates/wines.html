@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Винный погреб — vinumkb{% endblock %}
+
+{% block content %}
+{% from '_art.html' import bottle, dish, cat %}
+<h1>Винный погреб</h1>
+<p class="sub" style="margin-bottom:22px;">Справочные данные базы знаний: регионы, характеристики и ориентировочные цены в BYN.</p>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Вино</th>
+        <th>Происхождение</th>
+        <th>Цена, BYN</th>
+        <th>Тип / Сладость</th>
+        <th>Подача</th>
+        <th>Бокал</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in wines %}
+        <tr>
+          <td><div style="display:flex; gap:14px; align-items:center;"><span class="thumb">{{ bottle(w.type, w.name) }}</span><div><a href="{{ url_for('wine_detail', name=w.name) }}">{{ w.name }}</a><span class="sub-td">{{ w.grape }}</span></div></div></td>
+          <td>{{ w.country }}<span class="sub-td">{{ w.region }}</span></td>
+          <td><strong>{{ w.price_byn }} BYN</strong><span class="sub-td">{{ w.price_segment }}</span></td>
+          <td>{{ w.type }}<span class="sub-td">{{ w.sweetness }}</span></td>
+          <td>{{ w.serving_temp }}</td>
+          <td>{{ w.glass }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

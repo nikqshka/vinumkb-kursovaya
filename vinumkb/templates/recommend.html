@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Что к столу — vinumkb{% endblock %}
+
+{% block content %}
+{% from '_art.html' import bottle, dish, cat %}
+<h1>Что подать к столу</h1>
+<p class="sub">Блюдо, тип вина, бюджет: экспертная система применит правила сомелье и объяснит, почему выбрала эти вина.</p>
+<p style="margin:10px 0 22px;"><a href="#all-rules" style="color:var(--link); font-size:14px;">Посмотреть все {{ rules|length }} правил</a></p>
+
+<form method="post" action="{{ url_for('recommend_view') }}" style="max-width:740px;">
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="margin-bottom:12px;">Какое блюдо планируете подавать?</h3>
+    <div class="dishes">{% for d in dishes %}<label class="dish-opt"><input type="radio" name="dish" value="{{ d }}" {% if dish == d or (not dish and loop.first) %}checked{% endif %}><span class="t">{{ dish(d) }}<span>{{ d }}</span></span></label>{% endfor %}
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3 style="margin-bottom:12px;">Желаемый тип вина</h3>
+    <div style="display:grid; gap:9px;">
+      {% for wt in wine_types %}
+        <label style="display:flex; align-items:center; gap:10px; font-size:14.5px; cursor:pointer;">
+          <input type="radio" name="wine_type" value="{{ wt }}" {% if wine_type == wt or (not wine_type and loop.first) %}checked{% endif %} style="accent-color:var(--accent); width:17px; height:17px;">
+          <span>{{ wt }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px;">
+    <h3 style="margin-bottom:12px;">Бюджет</h3>
+    <div style="display:grid; gap:9px;">
+      {% for b in budgets %}
+        <label style="display:flex; align-items:center; gap:10px; font-size:14.5px; cursor:pointer;">
+          <input type="radio" name="budget" value="{{ b }}" {% if budget == b or (not budget and loop.first) %}checked{% endif %} style="accent-color:var(--accent); width:17px; height:17px;">
+          <span>{{ b }}</span>
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display:flex; gap:10px; margin-bottom:32px;">
+    <button type="submit" class="btn">Показать вина</button>
+    <a href="{{ url_for('recommend_view') }}" class="btn secondary">Сбросить</a>
+  </div>
+</form>
+
+{% if result %}
+  <div class="card" style="border-left:3px solid var(--accent); margin-bottom:20px;">
+    <small>Правило {{ result.rule.id }} · Время вывода: {{ result.elapsed_ms }} мс</small>
+    <h3 style="margin-bottom:6px;">{{ result.rule.if.dish }} + {{ result.rule.if.wine_type }}</h3>
+    <p style="color:var(--text);">{{ result.rule.then.explanation }}</p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom:36px;">
+    {% for w in result.wines %}
+      <article class="card">
+        <div class="cover">{{ bottle(w.type, w.name) }}</div>
+        <small>{{ w.type }} · {{ w.sweetness }} · {{ w.country }}</small>
+        <a class="card-title-link" href="{{ url_for('wine_detail', name=w.name) }}">{{ w.name }}</a>
+        <p>{{ w.description }}</p>
+        <div class="meta-accent">{{ w.price_byn }} BYN · {{ w.serving_temp }}</div>
+      </article>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div id="all-rules" style="margin-top:34px;">
+  <h2 style="margin-bottom:14px;">Правила сомелье ({{ rules|length }})</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>ЕСЛИ (Условие)</th><th>ТО (Рекомендация и объяснение)</th></tr></thead>
+      <tbody>
+        {% for r in rules %}
+          <tr>
+            <td><strong>{{ r.id }}</strong></td>
+            <td>{{ r.if.dish }} + {{ r.if.wine_type }}</td>
+            <td>{{ r.then.explanation }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

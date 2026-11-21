@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}vinumkb — база знаний сомелье{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3ede0; --paper-2: #ebe3d1; --card: #fbf8f1;
+      --ink: #1b1f1c; --emerald: #0f3d2e; --emerald-2: #176248; --brass: #b08d3e; --brass-dark: #7e6322; --claret: #7a1f33;
+      --bg: var(--paper); --surface: var(--card); --surface-2: var(--paper-2);
+      --border: #d6cbb0; --text: var(--ink); --muted: #6b6a5c;
+      --accent: var(--claret); --accent-hover: #5e1627; --accent-soft: rgba(176,141,62,.16);
+      --link: var(--emerald-2); --radius: 3px; --side: 268px;
+      --serif: "Fraunces", Georgia, "Times New Roman", serif;
+      --sans: "Instrument Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--sans); background: var(--paper); color: var(--ink); line-height: 1.65;
+      display: grid; grid-template-columns: var(--side) minmax(0, 1fr); min-height: 100vh;
+      background-image: radial-gradient(rgba(126,99,34,.07) 1px, transparent 1px); background-size: 14px 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+    ::selection { background: var(--emerald); color: var(--paper); }
+
+    /* Sidebar */
+    .side {
+      position: sticky; top: 0; height: 100vh; padding: 34px 26px 28px; color: #e4dcc6;
+      background: linear-gradient(180deg, #0f3d2e 0%, #0a2a20 100%);
+      border-right: 4px double var(--brass); display: flex; flex-direction: column; gap: 26px; overflow-y: auto;
+    }
+    .logo { font-family: var(--serif); font-size: 31px; font-weight: 700; color: #f6efdb; line-height: 1; }
+    .logo span { color: var(--brass); font-style: italic; }
+    .brand-caption { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: #a9b9ab; margin-top: 8px; display: block; }
+    .nav { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid rgba(176,141,62,.45); padding-top: 18px; }
+    .nav a { padding: 9px 14px; font-size: 15px; color: #c9d3c6; border-left: 3px solid transparent; transition: all .15s; }
+    .nav a:hover { color: #fff; background: rgba(255,255,255,.06); border-left-color: rgba(176,141,62,.6); }
+    .nav a.active { color: #fff; font-weight: 600; background: rgba(176,141,62,.18); border-left-color: var(--brass); }
+    .side-foot { margin-top: auto; font-size: 12.5px; color: #8fa293; border-top: 1px solid rgba(176,141,62,.35); padding-top: 14px; }
+
+    .shell { min-width: 0; display: flex; flex-direction: column; }
+    main.wrap { width: 100%; max-width: 1040px; margin: 0 auto; padding: 56px 44px 70px; flex: 1; }
+
+    /* Type */
+    h1, h2, h3 { font-family: var(--serif); color: var(--emerald); }
+    h1 { font-size: clamp(34px, 4.6vw, 58px); font-weight: 700; line-height: 1.04; letter-spacing: -.8px; }
+    h2 { font-size: 28px; font-weight: 700; letter-spacing: -.3px; }
+    h3 { font-size: 20px; font-weight: 700; line-height: 1.25; }
+    .eyebrow { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--brass-dark); margin-bottom: 12px; }
+    .sub { color: var(--muted); font-size: 16px; margin-top: 10px; max-width: 64ch; }
+    code { font-size: 12.5px; background: var(--paper-2); color: var(--claret); padding: 2px 6px; border-radius: 2px; }
+
+    /* Hero */
+    .hero { margin-bottom: 40px; padding: 8px 0 38px 30px; border-left: 6px solid var(--brass); border-bottom: 4px double var(--border); position: relative; }
+    .hero h1 { max-width: 15ch; }
+    .hero h1 span { color: var(--claret); font-style: italic; }
+    .hero .intro { font-size: 18px; color: #45483f; margin: 18px 0 26px; max-width: 56ch; }
+    .search-pill { display: flex; max-width: 640px; background: var(--card); border: 2px solid var(--emerald); box-shadow: 6px 6px 0 var(--brass); }
+    .search-pill:focus-within { box-shadow: 8px 8px 0 var(--brass); }
+    .search-pill input { flex: 1; border: none; background: transparent; padding: 15px 20px; font: 16px var(--sans); color: var(--ink); outline: none; }
+    .search-pill button { border: none; background: var(--emerald); color: var(--paper); padding: 0 28px; font: 600 15px var(--sans); cursor: pointer; }
+    .search-pill button:hover { background: var(--claret); }
+    .counter { font-size: 13px; color: var(--muted); margin: 18px 0 14px; }
+
+    /* Chips & buttons */
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { padding: 5px 13px; border: 1px dashed var(--brass-dark); background: var(--card); font-size: 13.5px; color: var(--emerald); cursor: pointer; transition: all .15s; }
+    .chip:hover, .chip.active { background: var(--emerald); color: var(--paper); border-style: solid; border-color: var(--emerald); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; height: 46px; padding: 0 24px;
+      background: var(--emerald); color: var(--paper); font: 600 15px var(--sans); border: 2px solid var(--emerald);
+      box-shadow: 4px 4px 0 var(--brass); cursor: pointer; transition: transform .12s, box-shadow .12s, background .12s;
+    }
+    .btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--brass); background: var(--emerald-2); }
+    .btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--brass); }
+    .btn.secondary { background: var(--card); color: var(--emerald); box-shadow: 4px 4px 0 var(--border); }
+    .btn.secondary:hover { box-shadow: 2px 2px 0 var(--border); background: var(--paper-2); }
+    .btn-sm { height: 36px; padding: 0 14px; font-size: 13.5px; background: var(--card); color: var(--emerald); box-shadow: 3px 3px 0 var(--border); }
+    .btn-primary { background: var(--emerald); color: var(--paper); box-shadow: 3px 3px 0 var(--brass); }
+
+    /* Stat strip */
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); margin: 30px 0 46px; border-top: 4px double var(--border); border-bottom: 4px double var(--border); }
+    .tile { padding: 22px 8px 20px 22px; border-right: 1px solid var(--border); }
+    .tile:last-child { border-right: none; }
+    .tile .n { font-family: var(--serif); font-size: 50px; font-weight: 700; color: var(--emerald); line-height: 1; }
+    .tile .l { font-size: 14px; color: var(--brass-dark); margin-top: 6px; font-weight: 500; }
+
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin: 52px 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); position: relative; }
+    .section-head::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 72px; height: 3px; background: var(--brass); }
+    .section-head a { font-size: 14px; color: var(--claret); font-weight: 600; border-bottom: 1px solid currentColor; }
+
+    /* Label cards */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: stretch; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+    .card, .wine-card {
+      display: flex; flex-direction: column; height: 100%; padding: 24px 22px; background: var(--card);
+      border: 1px solid var(--border); box-shadow: inset 0 0 0 5px var(--card), inset 0 0 0 6px var(--border);
+      transition: transform .15s, border-color .15s;
+    }
+    .card:hover, .wine-card:hover { transform: translateY(-3px); border-color: var(--brass); box-shadow: inset 0 0 0 5px var(--card), inset 0 0 0 6px var(--brass), 0 12px 24px rgba(15,61,46,.12); }
+    .card-cover { height: 140px; margin: -4px -2px 16px; display: grid; place-items: center; border: 1px solid var(--emerald); }
+    .card small, .wine-card small { font-size: 13px; color: var(--brass-dark); display: block; margin-bottom: 7px; font-weight: 500; }
+    .card-title-link, .card-title { font-family: var(--serif); color: var(--emerald); font-weight: 700; font-size: 21px; line-height: 1.22; display: block; margin-bottom: 9px; }
+    a.card-title-link:hover { color: var(--claret); }
+    .card p, .card-desc { font-size: 14.5px; color: #55564a; }
+    .card .meta-accent { margin-top: auto; padding-top: 14px; font-size: 14px; color: var(--claret); font-weight: 600; }
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .badge, .badge-soft { font-size: 12.5px; color: var(--emerald); background: var(--paper-2); padding: 2px 10px; }
+    .card-footer { margin-top: auto; padding-top: 12px; }
+
+    .return-banner { margin: 52px 0 6px; padding: 30px 34px; display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; background: var(--emerald); color: var(--paper); border: 4px double var(--brass); }
+    .return-banner h3 { color: #f6efdb; }
+    .return-banner p { color: #b7c5b8 !important; }
+    .return-banner .btn { background: var(--brass); border-color: var(--brass); color: var(--ink); box-shadow: 4px 4px 0 #061a13; }
+
+
+    .card { height: auto; }
+    .grid-3 > .card, .grid-3 > .wine-card, .grid-2 > .card { height: 100%; }
+    .cover { display: grid; place-items: center; height: 180px; margin: -4px -2px 16px; border: 1px solid var(--brass); background: radial-gradient(circle at 50% 30%, #1c6a4e, #0a2a20 78%); overflow: hidden; }
+    .cover svg { height: 86%; width: auto; filter: drop-shadow(0 8px 8px rgba(0,0,0,.4)); }
+    .cover.cat svg { height: 66%; }
+    .thumb { flex: none; width: 46px; height: 64px; display: grid; place-items: center; background: #0f3d2e; border: 1px solid var(--brass); }
+    .thumb svg { height: 52px; width: auto; }
+    .dishes { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 10px; }
+    .dish-opt { position: relative; }
+    .dish-opt input { position: absolute; opacity: 0; }
+    .dish-opt .t { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 6px 10px; height: 100%; background: var(--card); border: 1px solid var(--border); cursor: pointer; text-align: center; font-size: 13.5px; line-height: 1.3; transition: all .12s; }
+    .dish-opt .t svg { width: 62px; height: 62px; }
+    .dish-opt:hover .t { border-color: var(--brass); }
+    .dish-opt input:checked + .t { border: 2px solid var(--emerald); background: var(--accent-soft); box-shadow: 3px 3px 0 var(--brass); font-weight: 600; }
+    .dish-opt input:focus-visible + .t { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+    .vcover { position: relative; display: grid; place-items: center; height: 170px; margin: -4px -2px 16px; border: 1px solid var(--brass); background: radial-gradient(circle at 50% 30%, #1c6a4e, #0a2a20 78%); }
+    .vcover svg { height: 62%; width: auto; filter: drop-shadow(0 6px 8px rgba(0,0,0,.4)); }
+    .play { position: absolute; right: 12px; bottom: 12px; width: 48px; height: 34px; background: #d6302b; border-radius: 9px; display: grid; place-items: center; box-shadow: 0 4px 10px rgba(0,0,0,.4); }
+    .play::after { content: ""; margin-left: 3px; border-left: 13px solid #fff; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+    a.card:hover .play { background: #ef3b36; }
+
+    .cover, .vcover, .thumb { position: relative; }
+    .cover img, .vcover img { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; }
+    .thumb img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); object-fit: contain; }
+    .cover:has(img), .thumb:has(img) { background: #fff; }
+    .dish-opt .t img { width: 62px; height: 62px; object-fit: cover; border-radius: 50%; border: 2px solid var(--brass); }
+    .dish-strip img { width: 76px; height: 76px; object-fit: cover; border-radius: 50%; border: 2px solid var(--brass); }
+
+    /* Forms */
+    select, input[type="text"], input[type="search"] { height: 44px; background: var(--card); border: 2px solid var(--emerald); border-radius: 0; color: var(--ink); padding: 0 14px; font: 14.5px var(--sans); outline: none; }
+    select:focus, input[type="text"]:focus { box-shadow: 4px 4px 0 var(--brass); }
+    input[type="radio"] { accent-color: var(--emerald) !important; }
+
+    /* Tables */
+    .table-wrap { background: var(--card); border: 2px solid var(--emerald); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+    th, td { padding: 14px 18px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    thead th { background: var(--emerald); color: #f6efdb; font-family: var(--serif); font-size: 15.5px; border-bottom: 3px solid var(--brass); }
+    tbody th { color: var(--brass-dark); font-weight: 600; white-space: nowrap; }
+    tbody tr:hover { background: var(--paper-2); }
+    tr:last-child td, tr:last-child th { border-bottom: none; }
+    td a { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--emerald); }
+    td a:hover { color: var(--claret); }
+    .sub-td { display: block; font-size: 13px; color: var(--muted); font-weight: 400; }
+
+    .site-footer { max-width: 1040px; width: 100%; margin: 0 auto; padding: 24px 44px 38px; border-top: 4px double var(--border); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+    .site-footer a { color: var(--emerald-2); font-weight: 500; }
+
+    @media (max-width: 1020px) {
+      body { grid-template-columns: 1fr; }
+      .side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 16px 20px; border-right: none; border-bottom: 4px double var(--brass); gap: 12px 24px; }
+      .brand-caption, .side-foot { display: none; }
+      .nav { flex-direction: row; flex-wrap: wrap; border: none; padding: 0; }
+      .nav a { border-left: none; border-bottom: 3px solid transparent; padding: 6px 10px; }
+      .nav a.active { border-bottom-color: var(--brass); }
+      main.wrap { padding: 36px 20px 50px; } .site-footer { padding: 20px; }
+      .grid-3 { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .grid-3 { grid-template-columns: 1fr; } .tiles { grid-template-columns: 1fr 1fr; }
+      .tile:nth-child(2) { border-right: none; } .hero { padding-left: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <aside class="side">
+    <div>
+      <a class="logo" href="{{ url_for('index') }}">vinum<span>kb</span></a>
+      <span class="brand-caption">Вино, блюдо и повод</span>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('articles_list') }}" class="{% if request.endpoint in ['articles_list', 'article_detail'] %}active{% endif %}">Журнал</a>
+      <a href="{{ url_for('videos_list') }}" class="{% if request.endpoint == 'videos_list' %}active{% endif %}">Видео</a>
+      <a href="{{ url_for('library_view') }}" class="{% if request.endpoint == 'library_view' %}active{% endif %}">Закладки</a>
+      <a href="{{ url_for('search_view') }}" class="{% if request.endpoint == 'search_view' %}active{% endif %}">Найти</a>
+      <a href="{{ url_for('concepts_view') }}" class="{% if request.endpoint == 'concepts_view' %}active{% endif %}">Глоссарий</a>
+      <a href="{{ url_for('graph_view') }}" class="{% if request.endpoint == 'graph_view' %}active{% endif %}">Онтология</a>
+      <a href="{{ url_for('recommend_view') }}" class="{% if request.endpoint == 'recommend_view' %}active{% endif %}">Что к столу</a>
+      <a href="{{ url_for('wines_catalog') }}" class="{% if request.endpoint in ['wines_catalog', 'wine_detail'] %}active{% endif %}">Винный погреб</a>
+      <a href="{{ url_for('stats_view') }}" class="{% if request.endpoint == 'stats_view' %}active{% endif %}">Замеры</a>
+    </nav>
+    <div class="side-foot">Можейко Н.Н.<br>База знаний по подбору вина</div>
+  </aside>
+  <div class="shell">
+    <main class="wrap">{% block content %}{% endblock %}</main>
+    <footer class="site-footer">
+      <div>vinumkb · База знаний по подбору вина (сомелье) · Можейко Н.Н.</div>
+      <div><a href="{{ url_for('graph_view') }}">Онтология</a></div>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Видео — vinumkb{% endblock %}
+
+{% block content %}
+{% from '_art.html' import dish, cat %}
+<h1>Видео о вине</h1>
+<p class="sub">Подборка роликов с YouTube по темам журнала. Нажмите на карточку, и откроется YouTube в новой вкладке.</p>
+
+<div class="chips" style="margin:22px 0 26px;">
+  <a href="{{ url_for('videos_list') }}" class="chip {% if not active_cat %}active{% endif %}">Все темы</a>
+  {% for t in topics %}
+    <a href="{{ url_for('videos_list', category=t) }}" class="chip {% if active_cat == t %}active{% endif %}">{{ t }}</a>
+  {% endfor %}
+</div>
+
+<div class="grid-3">
+  {% for v in videos %}
+    <a class="card" href="{{ v.url }}" target="_blank" rel="noopener noreferrer">
+      <div class="vcover">{% if v.icon_kind == 'dish' %}{{ dish(v.icon) }}{% else %}{{ cat(v.icon) }}{% endif %}<span class="play"></span></div>
+      <small>{{ v.topic }}</small>
+      <span class="card-title">{{ v.title }}</span>
+      <p>{{ v.desc }}</p>
+      <div class="meta-accent">Смотреть на YouTube ↗</div>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

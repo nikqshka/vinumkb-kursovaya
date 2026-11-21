@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Онтология — vinumkb{% endblock %}
+{% block head %}
+<style>
+  .onto { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 26px; margin-top: 24px; align-items: start; }
+  .onto-list { border: 2px solid var(--emerald); background: var(--card); max-height: 640px; overflow-y: auto; }
+  .onto-list input { width: 100%; border: none; border-bottom: 2px solid var(--emerald); height: 42px; position: sticky; top: 0; }
+  .onto-list h4 { font: 600 13px var(--sans); color: #f6efdb; background: var(--emerald); padding: 6px 14px; }
+  .onto-list button { display: block; width: 100%; text-align: left; padding: 8px 14px; border: none; border-bottom: 1px solid var(--border); background: transparent; font: 14.5px var(--sans); color: var(--ink); cursor: pointer; }
+  .onto-list button:hover { background: var(--paper-2); }
+  .onto-list button.on { background: var(--accent-soft); font-weight: 600; box-shadow: inset 4px 0 0 var(--brass); }
+  .trail { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .trail button { border: none; background: none; color: var(--emerald-2); cursor: pointer; font: inherit; border-bottom: 1px dashed currentColor; }
+  .focus { padding: 28px 30px; background: var(--card); border: 2px solid var(--emerald); box-shadow: 8px 8px 0 var(--brass); }
+  .focus h2 { font-size: 36px; margin: 4px 0 10px; }
+  .rel-title { font: 600 13px var(--sans); color: var(--brass-dark); margin: 24px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .rel { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px dotted var(--border); flex-wrap: wrap; }
+  .rel code { min-width: 112px; text-align: center; }
+  .rel button { border: none; background: none; font: 700 18px var(--serif); color: var(--emerald); cursor: pointer; text-align: left; }
+  .rel button:hover { color: var(--claret); }
+  .rel span.dead { font: 700 18px var(--serif); color: var(--muted); }
+  .rel em { font-size: 13.5px; color: var(--muted); flex-basis: 100%; padding-left: 124px; }
+  @media (max-width: 760px) { .onto { grid-template-columns: 1fr; } .rel em { padding-left: 0; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Онтология</h1>
+<p class="sub">Выберите понятие слева и переходите по его связям: каждый шаг открывает следующее понятие. Выберите понятие, чтобы увидеть его определение и связи с другими понятиями.</p>
+
+<div style="margin-top:18px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+  <span style="font-size:14px; color:var(--muted);">Показывать связи</span>
+  <select id="relFilter">
+    <option value="">Все типы</option>
+    {% for rt in rel_types %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
+  </select>
+</div>
+
+<div class="onto">
+  <div class="onto-list" id="list"></div>
+  <div>
+    <div class="trail" id="trail"></div>
+    <div class="focus" id="focus"></div>
+  </div>
+</div>
+
+<script>
+  let D = null, current = 'Вино', path = [];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const byName = n => D.concepts.find(c => c.name === n);
+
+  function go(name, push = true) {
+    current = name;
+    if (push) path = [...path.filter(p => p !== name), name].slice(-6);
+    draw();
+  }
+
+  function relRows(rows, side) {
+    if (!rows.length) return '<p style="color:var(--muted); font-size:14px; padding:8px 0;">Связей этого типа нет.</p>';
+    return rows.map(r => {
+      const other = side === 'out' ? r.to : r.from;
+      const link = byName(other)
+        ? `<button data-go="${esc(other)}">${esc(other)}</button>`
+        : `<span class="dead">${esc(other)}</span>`;
+      return `<div class="rel"><code>${esc(r.type)}</code>${link}<em>${esc(r.description || '')}</em></div>`;
+    }).join('');
+  }
+
+  function draw() {
+    const f = document.getElementById('relFilter').value;
+    const q = (document.getElementById('q') || {}).value || '';
+    const groups = {};
+    D.concepts.filter(c => c.name.toLowerCase().includes(q.toLowerCase()))
+      .forEach(c => (groups[c.category] = groups[c.category] || []).push(c));
+    const list = document.getElementById('list');
+    list.innerHTML = `<input type="text" id="q" placeholder="Найти понятие" value="${esc(q)}">` +
+      Object.entries(groups).map(([cat, items]) => `<h4>${esc(cat)}</h4>` +
+        items.map(c => `<button class="${c.name === current ? 'on' : ''}" data-go="${esc(c.name)}">${esc(c.name)}</button>`).join('')).join('');
+    const qi = document.getElementById('q');
+    qi.addEventListener('input', () => { const p = qi.selectionStart; draw(); const n = document.getElementById('q'); n.focus(); n.setSelectionRange(p, p); });
+
+    const c = byName(current);
+    const keep = r => !f || r.type === f;
+    const out = D.relations.filter(r => r.from === current && keep(r));
+    const inn = D.relations.filter(r => r.to === current && keep(r));
+    document.getElementById('focus').innerHTML = c
+      ? `<small style="color:var(--brass-dark); font-weight:500;">${esc(c.category)}</small>
+         <h2>${esc(c.name)}</h2><p style="font-size:16.5px; color:#3d4038;">${esc(c.description)}</p>
+         <div class="rel-title">Ведёт к · ${out.length}</div>${relRows(out, 'out')}
+         <div class="rel-title">Приходят из · ${inn.length}</div>${relRows(inn, 'in')}`
+      : '<p>Выберите понятие в списке.</p>';
+    document.getElementById('trail').innerHTML = path.length > 1
+      ? 'Ваш путь: ' + path.map((p, i) => `<button data-go="${esc(p)}">${esc(p)}</button>${i < path.length - 1 ? ' / ' : ''}`).join('') : '';
+    document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+  }
+
+  fetch('/api/graph').then(r => r.json()).then(d => { D = d; go('Вино'); });
+  document.getElementById('relFilter').addEventListener('change', draw);
+</script>
+{% endblock %}

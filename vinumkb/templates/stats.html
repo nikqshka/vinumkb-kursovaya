@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Замеры — vinumkb{% endblock %}
+
+{% block content %}
+<h1>Замеры скорости</h1>
+<p class="sub">Проверьте скорость поиска и логического вывода на сервере и посмотрите журнал запросов.</p>
+
+<div class="tiles">
+  <div class="tile"><div class="n">{{ stats.articles }}</div><div class="l">статей</div></div>
+  <div class="tile"><div class="n">{{ stats.concepts }}</div><div class="l">понятий онтологии</div></div>
+  <div class="tile"><div class="n">{{ stats.relations }}</div><div class="l">связей</div></div>
+  <div class="tile"><div class="n">{{ stats.rules }}</div><div class="l">экспертных правил</div></div>
+</div>
+
+<h2 style="margin-bottom:8px;">Скорость поиска на этом устройстве</h2>
+<p class="sub" style="margin-bottom:16px;">Выполняется серия из 100 контрольных запросов к базе знаний и машине логического вывода.</p>
+
+<button class="btn" id="benchBtn">Запустить замер</button>
+<div id="benchResult" class="card" style="display:none; margin-top:16px; border-left:3px solid var(--accent);"></div>
+
+<h2 style="margin:34px 0 8px;">Последние запросы в этой сессии</h2>
+<p class="sub" style="margin-bottom:16px;">Журнал фиксирует время отклика БЗ при поиске и подборе.</p>
+
+{% if query_log %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Время</th><th>Модуль</th><th>Запрос</th><th>Найдено</th><th>Отклик</th></tr></thead>
+      <tbody>
+        {% for q in query_log %}
+          <tr><td>{{ q.time }}</td><td>{{ q.mode }}</td><td>{{ q.summary }}</td><td>{{ q.found }}</td><td><strong>{{ q.elapsed_ms }} мс</strong></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p style="color:var(--muted); font-size:14px;">Выполните поиск или подбор вина, чтобы увидеть результаты в журнале.</p>
+{% endif %}
+
+<script>
+  document.getElementById('benchBtn').addEventListener('click', async () => {
+    const res = await fetch('/api/benchmark', { method: 'POST' });
+    const d = await res.json();
+    const box = document.getElementById('benchResult');
+    box.style.display = 'block';
+    box.innerHTML = `
+      <strong>Результат контрольной серии (${d.iterations} запросов):</strong>
+      <div style="margin-top:6px; color:var(--muted); font-size:14px;">
+        Общее время: <strong style="color:var(--text);">${d.total_ms} мс</strong> ·
+        Среднее время: <strong style="color:var(--text);">${d.avg_ms} мс</strong> (мин ${d.min_ms} / макс ${d.max_ms} мс) ·
+        Скорость: <strong style="color:var(--accent);">${d.qps} запр/сек</strong>
+      </div>`;
+  });
+</script>
+{% endblock %}
