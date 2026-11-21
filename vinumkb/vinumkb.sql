@@ -1,15 +1,14 @@
--- vinumkb: реляционная база знаний по подбору вина (SQLite)
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE wines (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     name          TEXT NOT NULL UNIQUE,
-    type          TEXT NOT NULL,          -- Красное / Белое / Розовое / Игристое
-    sweetness     TEXT NOT NULL,          -- Сухое / Полусухое / Полусладкое / Сладкое
+    type          TEXT NOT NULL,        
+    sweetness     TEXT NOT NULL,       
     grape         TEXT NOT NULL,
     region        TEXT NOT NULL,
     country       TEXT NOT NULL,
-    price_segment TEXT NOT NULL,          -- Бюджетный / Средний / Премиум
+    price_segment TEXT NOT NULL,      
     price_byn     INTEGER NOT NULL,
     serving_temp  TEXT NOT NULL,
     glass         TEXT NOT NULL,
@@ -44,12 +43,12 @@ CREATE TABLE concepts (
 CREATE TABLE relations (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     from_concept TEXT NOT NULL,
-    type         TEXT NOT NULL,           -- is_a, pairs_with, balances ...
+    type         TEXT NOT NULL,         
     to_concept   TEXT NOT NULL,
     description  TEXT
 );
 CREATE TABLE rules (
-    id          TEXT PRIMARY KEY,         -- R01, R02 ...
+    id          TEXT PRIMARY KEY,         
     dish        TEXT NOT NULL,
     wine_type   TEXT NOT NULL,
     explanation TEXT NOT NULL
@@ -65,8 +64,8 @@ CREATE TABLE videos (
     title       TEXT NOT NULL,
     topic       TEXT NOT NULL,
     description TEXT NOT NULL,
-    url         TEXT NOT NULL,            -- ссылка на YouTube
-    icon_kind   TEXT NOT NULL,            -- dish / cat
+    url         TEXT NOT NULL,   
+    icon_kind   TEXT NOT NULL,           
     icon        TEXT NOT NULL
 );
 CREATE INDEX idx_wines_type ON wines(type);
