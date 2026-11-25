@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Управление базой знаний — vinumkb{% endblock %}
+
+{% block content %}
+<h1>Панель управления базой знаний</h1>
+<p class="sub">Разграничение прав доступа, контроль жизненного цикла контента и добавление новых материалов.</p>
+
+<div style="display:flex; gap:10px; margin:20px 0 26px; align-items:center;">
+  <span style="font-weight:600; font-size:14px;">Текущая роль:</span>
+  <a href="{{ url_for('admin_panel', role='reader') }}" class="btn btn-sm {% if role == 'reader' %}btn-primary{% endif %}">Читатель (Гость)</a>
+  <a href="{{ url_for('admin_panel', role='sommelier') }}" class="btn btn-sm {% if role == 'sommelier' %}btn-primary{% endif %}">Эксперт-сомелье (Автор)</a>
+  <a href="{{ url_for('admin_panel', role='admin') }}" class="btn btn-sm {% if role == 'admin' %}btn-primary{% endif %}">Администратор БЗ</a>
+</div>
+
+{% if message %}
+  <div class="card" style="border-left:4px solid var(--emerald); background:var(--surface-2); margin-bottom:20px; padding:14px 18px;">
+    <strong>{{ message }}</strong>
+  </div>
+{% endif %}
+
+{% if role == 'reader' %}
+  <div class="card" style="padding:28px;">
+    <h3 style="color:var(--claret); margin-bottom:8px;">Доступ ограничен</h3>
+    <p>Для роли <strong>Читатель</strong> доступен только режим просмотра базы знаний, поиск и запуск рекомендаций. Функции публикации материалов и редактирования структуры заблокированы политикой безопасности.</p>
+  </div>
+{% else %}
+  <div class="grid-2">
+    <!-- Форма добавления статьи (для Эксперта и Админа) -->
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Публикация статьи сомелье</h3>
+      <small style="color:var(--muted); margin-bottom:14px;">Добавление обучающего материала с расстановкой метатегов</small>
+      <form method="post" action="{{ url_for('admin_panel', role=role) }}" style="display:grid; gap:12px;">
+        <input type="hidden" name="action" value="add_article">
+        <div>
+          <label style="display:block; font-size:13px; margin-bottom:4px;">Заголовок статьи</label>
+          <input type="text" name="title" required placeholder="Например: Правила выбора бокалов" style="width:100%;">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="display:block; font-size:13px; margin-bottom:4px;">Категория</label>
+            <select name="category" style="width:100%;">
+              <option>Гастрономия</option>
+              <option>Основы дегустации</option>
+              <option>Сервировка</option>
+              <option>Сорта винограда</option>
+              <option>Регионы и стили</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:13px; margin-bottom:4px;">Время чтения</label>
+            <input type="text" name="read_time" value="4 мин" style="width:100%;">
+          </div>
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; margin-bottom:4px;">Совет сомелье (акцентная вырезка)</label>
+          <input type="text" name="tip" placeholder="Краткий экспертный лайфхак" style="width:100%;">
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; margin-bottom:4px;">Текст статьи</label>
+          <textarea name="content" required rows="5" style="width:100%; padding:10px; font-family:var(--sans); border:2px solid var(--emerald); background:var(--card);"></textarea>
+        </div>
+        <button type="submit" class="btn">Опубликовать в БЗ</button>
+      </form>
+    </div>
+
+    <!-- Форма добавления понятия в онтологию (только для Админа/Инженера по знаниям) -->
+    <div class="card">
+      <h3 style="margin-bottom:12px;">Добавление термина онтологии</h3>
+      <small style="color:var(--muted); margin-bottom:14px;">Расширение графа понятий базы знаний</small>
+      <form method="post" action="{{ url_for('admin_panel', role=role) }}" style="display:grid; gap:12px;">
+        <input type="hidden" name="action" value="add_concept">
+        <div>
+          <label style="display:block; font-size:13px; margin-bottom:4px;">Наименование понятия</label>
+          <input type="text" name="name" required placeholder="Например: Аэрация" style="width:100%;">
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; margin-bottom:4px;">Категория понятий</label>
+          <select name="category" style="width:100%;">
+            <option>Органолептика</option>
+            <option>Сервировка</option>
+            <option>Красный сорт</option>
+            <option>Белый сорт</option>
+            <option>Категория блюд</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:13px; margin-bottom:4px;">Энологическое определение</label>
+          <textarea name="description" required rows="4" style="width:100%; padding:10px; font-family:var(--sans); border:2px solid var(--emerald); background:var(--card);"></textarea>
+        </div>
+        <button type="submit" class="btn secondary">Добавить в онтологию</button>
+      </form>
+
+      <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
+        <small style="display:block; margin-bottom:6px; color:var(--brass-dark);">Состояние репозитория знаний:</small>
+        <span style="font-size:14px;">Статей в базе: <strong>{{ articles_count }}</strong> · Терминов: <strong>{{ concepts_count }}</strong></span>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
