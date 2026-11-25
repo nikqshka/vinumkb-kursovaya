@@ -444,7 +444,41 @@ def api_benchmark():
         'max_ms': round(max(latencies), 3),
         'qps': qps,
     })
-
+def admin_panel():
+    role = request.args.get('role', 'admin') 
+    message = None
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        con = connect()
+        try:
+            if action == 'add_article':
+                title = request.form.get('title', '').strip()
+                category = request.form.get('category', 'Гастрономия')
+                read_time = request.form.get('read_time', '4 мин')
+                tip = request.form.get('tip', '').strip()
+                content = request.form.get('content', '').strip()
+                if title and content:
+                    max_id = con.execute('SELECT COALESCE(MAX(id), 0) + 1 FROM articles').fetchone()[0]
+                    con.execute(
+                        'INSERT INTO articles (id, title, category, read_time, tip, content) VALUES (?, ?, ?, ?, ?, ?)',
+                        (max_id, title, category, read_time, tip, content)
+                    )
+                    con.commit()
+                    message = f'Статья «{title}» успешно добавлена в БЗ (ID #{max_id}) под ролью Эксперта!'
+            elif action == 'add_concept':
+                name = request.form.get('name', '').strip()
+                cat_c = request.form.get('category', 'Органолептика')
+                desc = request.form.get('description', '').strip()
+                if name and desc:
+                    con.execute('INSERT INTO concepts (name, category, description) VALUES (?, ?, ?)', (name, cat_c, desc))
+                    con.commit()
+                    message = f'Термин онтологии «{name}» успешно добавлен!'
+        finally:
+            con.close()
+            
+    kb = get_kb()
+    return render_template('admin.html', role=role, message=message, articles_count=len(kb['articles']), concepts_count=len(kb['ontology']['concepts']))
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
